@@ -1,6 +1,9 @@
 ![appstack](https://raw.github.com/mywaiting/appstack/master/appstack/applications/assets/images/logo.png)
 
-# appstack
+----------
+
+
+# Appstack
 
 Appstack is a web application skeleton for python web development.
 
@@ -15,3 +18,7 @@ This skeleton build on some awesome python package. lists as follow:
 * [WTForms](http://wtforms.simplecodes.com/ "WTForms")
 
 Especially, recommand [Postgresql](http://www.postgresql.org "postgresql") as primary data store and [Redis](http://redis.io "redis") as secondary data store or just as cache.
+
+# Contribute
+
+If you have any questions or find some bug. please pull the request and notify me. I will merge your contribute into the master depends on project. Thank you.
