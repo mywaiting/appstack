@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{% block head %}{% end %}
+	</head>
+	<body>
+		{% block top %}{% end %}
+		{% block header %}
+			{% include "header.html" %}
+		{% end %}
+		{% block container %}{% end %}
+		{% block footer %}
+			{% include "footer.html" %}
+		{% end %}
+		{% block bottom %}{% end %}
+	</body>
+</html>
+{% block foot %}{% end %}

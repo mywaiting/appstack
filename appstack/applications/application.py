@@ -44,13 +44,13 @@ BASEDIR = os.path.join(APPSDIR, "..") # /appstack
 
 # --- default settings ---
 
+define("cookie_secret")
 define("debug", default=True, type=bool, help="global debug flag for debug options")
 define("port", default=8000, type=int, help="run backend server on the given port")
 define("processor", default=1, type=int, help="run backend server with the processors")
-define('settings')
-
-define('app_static_path')
-define('app_template_path')
+define("settings")
+define("static_path")
+define("template_path")
 
 
 # --- global vars ---
@@ -67,14 +67,14 @@ database = models.SQLAlchemy(options.database) \
 class Application(tornado.web.Application):
 	def __init__(self):
 		settings = {
-			"static_path": options.app_static_path if options.app_static_path else os.path.join(os.path.dirname(__file__), "assets"),
-			"template_path": options.app_template_path if options.app_template_path else os.path.join(os.path.dirname(__file__), "views"),
+			"cookie_secret": options.cookie_secret,
+			"static_path": options.app_static_path if options.static_path else os.path.join(os.path.dirname(__file__), "assets"),
+			"template_path": options.app_template_path if options.template_path else os.path.join(os.path.dirname(__file__), "views"),
 			"debug": options.debug,
 		}
 
 		handlers = [
 			(r'/', controllers.IndexController),
-			(r'/settings', controllers.SettingsHandler),
 		]
 
 		super(Application, self).__init__(handlers, **settings)
@@ -98,6 +98,53 @@ def main():
 	# tornado.locale.load_translations(settings.TRANSLATIONDIR) 
 	# tornado.locale.get_supported_locales()
 	# tornado.locale.set_supported_locales("en_US")
+
+	# httpserver
+	httpserver = tornado.httpserver.HTTPServer(Application(), xheaders=True)
+	httpserver.bind(options.port, "127.0.0.1")
+	httpserver.start(options.processor if options.processor else 1)
+
+	# WARNING: this timestamp must equal to supervisord.readear.conf stopwaitsecs = 10
+	# WARNING: if not or less, the server will be killed by supervisord before max_wait_seconds_before_shutdown
+	if settings.debug:
+		MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 0
+	else:
+		MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 10
+
+	# signal handler
+	def sig_handler(sig, frame):
+		logging.warning("Catching Signal: %s", sig)
+		tornado.ioloop.IOLoop.instance().add_callback(shutdown)
+
+	# signal handler's callback
+	def shutdown():
+		logging.info("Stopping HttpServer...")
+		httpserver.stop() # No longer accept new http traffic
+
+		logging.info("IOLoop Will be Terminate in %s Seconds...", 
+			MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
+		instance = tornado.ioloop.IOLoop.instance()
+
+		deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
+
+		# recursion for terminate IOLoop.instance()
+		def terminate():
+			now = time.time()
+			if now < deadline and (instance._callbacks or instance._timeouts):
+				instance.add_timeout(now + 1, terminate)
+			else:
+				instance.stop() # After process all _callbacks and _timeouts, break IOLoop.instance()
+				logging.info('Shutdown...')
+		# process recursion
+		terminate()
+
+	# signal register
+	signal.signal(signal.SIGINT, sig_handler)
+	signal.signal(signal.SIGTERM, sig_handler)
+
+	# start ioloop for socket, infinite before catch signal
+	tornado.ioloop.IOLoop.instance().start()
+	logging.info("Exit...")
 
 
 

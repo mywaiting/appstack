@@ -135,3 +135,8 @@ class ErrorController(BaseController):
         	status_code=status_code, 
         	status_message=status_message, 
         	custom_message=custom_message)
+
+
+class IndexController(BaseController):
+	def get(self):
+		return self.render("index.html")
