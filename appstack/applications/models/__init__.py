@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import redis
+from redis import StrictRedis
 
 import sqlalchemy
 from sqlalchemy import create_engine
@@ -17,26 +19,78 @@ from appstack.applications.application import cache, database
 """
 
 class SQLAlchemy(object):
-    def __init__(self, engine, **kwargs):
-        self.engine = create_engine(engine, **kwargs)
-        self.session = scoped_session(sessionmaker(bind=self.engine))
+	def __init__(self, engine, **kwargs):
+		self.engine = create_engine(engine, **kwargs)
+		self.session = scoped_session(sessionmaker(bind=self.engine))
 
-    @property
-    def Model(self):
-        if hasattr(self, "_base"):
-            base = self._base
-        else:
-            base = declarative_base(name='Model')
-            self._base = base
-            base.query = self.session.query_property()
-        return base
+	@property
+	def Model(self):
+		if hasattr(self, "_base"):
+			base = self._base
+		else:
+			base = declarative_base(name='Model')
+			self._base = base
+			base.query = self.session.query_property()
+		return base
 
-    def create_all(self):
-        self.Model.metadata.create_all(bind=self.engine)
+	def create_all(self):
+		self.Model.metadata.create_all(bind=self.engine)
 
-    def drop_all(self):
-        self.Model.metadata.drop_all(bind=self.engine)
+	def drop_all(self):
+		self.Model.metadata.drop_all(bind=self.engine)
 
+
+class Redis(object):
+	# urls: default://host:port/cache
+	# urls: socket://socket_path
+	def __init__(self, urls):
+		if urls.startwith("default"):
+			options = self._parse_urls(urls)
+			return StrictRedis(host=options['host'], port=options['port'], db=options.database)
+		elif urls.startwith("socket"):
+			options = self._parse_socket_urls(urls):
+			return redis.Redis(unix_socket_path=options.unix_socket_path)
+		else:
+			raise exc.ArgumentError("Redis URLs Error.")
+
+	# urls: default://host:port/cache
+	def _parse_urls(self, urls):
+		pattern = re.compile(r"""
+			(?P<name>[\w\+]+)://
+			(?:
+				(?:
+					\[(?P<ipv6host>[^/]+)\] |
+					(?P<ipv4host>[^/:]+)
+				)?
+				(?::(?P<port>[^/]*))?
+			)?
+			(?:/(?P<database>.*))?
+			""", re.X)
+
+		m = pattern.match(urls)
+		if m is not None:
+			componets = m.groupdict()
+			ipv4host = componets.pop('ipv4host')
+			ipv6host = componets.pop('ipv6host')
+			componets['host'] = ipv4host or ipv6host
+		else:
+			raise exc.ArgumentError("Redis URLs Error.")
+
+		return componets
+
+	# urls: socket://socket_path
+	def _parse_socket_urls(self, urls):
+		pattern = re.compile(r"""
+			(?P<name>[\w\+]+)://
+			(?P<unix_socket_path>.*)?
+			""", re.X)
+
+		m = pattern.match(urls)
+		if m is None:
+			raise exc.ArgumentError("Redis URLs Error.")
+
+		return componets
+		
 
 
 """Model class for all Models to initialize as Backend.

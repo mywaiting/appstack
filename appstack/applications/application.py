@@ -44,19 +44,44 @@ BASEDIR = os.path.join(APPSDIR, "..") # /appstack
 
 # --- default settings ---
 
+define("cache_driver", default="default") # Redis
+define("cache_host", default="localhost")
+define("cache_name")
+define("cache_port", default=6379) # for Redis
 define("cookie_secret")
+define("database_driver", default="postgresql") # Posgresql
+define("database_host", default="localhost")
+define("database_name")
+define("database_password")
+define("database_port", default=5432) # for Posgresql
+define("database_username")
 define("debug", default=True, type=bool, help="global debug flag for debug options")
 define("port", default=8000, type=int, help="run backend server on the given port")
 define("processor", default=1, type=int, help="run backend server with the processors")
 define("settings")
 define("static_path")
 define("template_path")
+define("xsrf_cookies")
+
+
+# cache: driver://host:port/cache
+define("cache", default=options.cache_driver+"://" \
+	+options.cache_host+":" \
+	+options.cache_port+"/" \
+	+options.cache_name, type=str, help="cache connections urls")
+# database: dialect+driver://username:password@host:port/database
+define("database", default=options.database_driver+"://" \
+	+options.database_username+":" \
+	+options.database_password+"@" \
+	+options.database_host+":" \
+	+options.database_port+"/" \
+	+options.database_name+"?charset=utf-8", type=str, help="database connections urls")
 
 
 # --- global vars ---
 
-cache = models.Redis() \
-		if options.debug else models.Redis()
+cache = models.Redis(options.cache) \
+		if options.debug else models.Redis(options.cache)
 database = models.SQLAlchemy(options.database) \
 		if options.debug else \
 		models.SQLAlchemy(options.database, pool_size=10, pool_recycle=7200)
@@ -68,9 +93,10 @@ class Application(tornado.web.Application):
 	def __init__(self):
 		settings = {
 			"cookie_secret": options.cookie_secret,
-			"static_path": options.app_static_path if options.static_path else os.path.join(os.path.dirname(__file__), "assets"),
-			"template_path": options.app_template_path if options.template_path else os.path.join(os.path.dirname(__file__), "views"),
-			"debug": options.debug,
+			"debug": options.debug or False,
+			"static_path": options.static_path or os.path.join(os.path.dirname(__file__), "assets"),
+			"template_path": options.template_path or os.path.join(os.path.dirname(__file__), "views"),
+			"xsrf_cookies": options.xsrf_cookies or True,
 		}
 
 		handlers = [
@@ -102,7 +128,7 @@ def main():
 	# httpserver
 	httpserver = tornado.httpserver.HTTPServer(Application(), xheaders=True)
 	httpserver.bind(options.port, "127.0.0.1")
-	httpserver.start(options.processor if options.processor else 1)
+	httpserver.start(options.processor or int(1))
 
 	# WARNING: this timestamp must equal to supervisord.readear.conf stopwaitsecs = 10
 	# WARNING: if not or less, the server will be killed by supervisord before max_wait_seconds_before_shutdown
