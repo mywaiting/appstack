@@ -2,14 +2,33 @@
 # -*- coding: utf-8 -*-
 
 
-debug = True
-port = 8000
-processor = 1
+# Redis
+cache_driver="default" # default/socket
+cache_host="localhost"
+cache_name=""
+cache_port=6379 # for Redis
 
-settings = None
+# Posgresql
+database_driver="postgresql" # Posgresql
+database_host="localhost"
+database_name=""
+database_password=""
+database_port=5432 # for Posgresql
+database_username=""
 
-app_static_path = None
-app_template_path = None
+# Tornado
+cookie_secret=""
+debug=True
+static_path=None
+template_path=None
+xsrf_cookies=True
+
+# Aka. settings
+settings=None
+
+# Server
+port=8000 # run backend server on the given port
+processor=1 # run backend server with the processors
 
 
 
@@ -22,18 +41,18 @@ app_template_path = None
 # 
 
 try:
-    from develop_settings import * # DevelopSettings
+    from .develop_settings import * # DevelopSettings
 except ImportError:
     pass
 
 
 try:
-    from production_settings import * # ProductionSettings
+    from .production_settings import * # ProductionSettings
 except ImportError:
     pass
 
 
 try:
-    from local_settings import * # LocalSettings
+    from .local_settings import * # LocalSettings
 except ImportError:
     pass
