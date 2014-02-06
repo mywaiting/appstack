@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 import redis
 from redis import StrictRedis
 
@@ -9,7 +11,7 @@ import appstack.applications
 import appstack.database
 
 # from appstack.applications.application import cache, database
-from appstack.database import schema, seeds
+# from appstack.database import schema, seeds
 
 
 
@@ -20,14 +22,17 @@ class Redis(object):
 	# urls: default://host:port/cache
 	# urls: socket://socket_path
 	def __init__(self, urls):
-		if urls.startwith("default"):
+		if urls.startswith("default"):
 			options = self._parse_urls(urls)
-			return StrictRedis(host=options['host'], port=options['port'], db=options.database)
-		elif urls.startwith("socket"):
+			self._instance = StrictRedis(host=options['host'], port=options['port'], db=options['database'])
+		elif urls.startswith("socket"):
 			options = self._parse_socket_urls(urls)
-			return redis.Redis(unix_socket_path=options.unix_socket_path)
+			self._instance =  redis.Redis(unix_socket_path=options.unix_socket_path)
 		else:
 			raise exc.ArgumentError("Redis URLs Error.")
+
+	def instance(self):
+		return self._instance
 
 	# urls: default://host:port/cache
 	def _parse_urls(self, urls):

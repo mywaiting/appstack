@@ -110,12 +110,14 @@ class BaseController(tornado.web.RequestHandler):
 	def render_string(self, template_name, **kwargs):
 		"""Hooks inner use `template_vars` for template.
 		"""
-		template_vars = self.template_vars if self.template_vars else dict()
-		kwargs.update(template_vars)
 		return super(BaseController, self).render_string(template_name, **kwargs)
 
 	def get_template_namespace(self):
-		return super(BaseController, self).get_template_namespace()
+		if not hasattr(self, "template_vars"):
+			self.template_vars = {}
+		ns = super(BaseController, self).get_template_namespace()
+		ns.update(self.template_vars)
+		return ns
 
 	# --- default headers ---
 

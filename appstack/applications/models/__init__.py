@@ -35,7 +35,7 @@ class BaseModelMetaClass(type):
 		cls.database = database
 
 	 def __init__(cls, name, bases, dct):
-	 	return cls
+	 	pass
 
 
 class BaseModel:
@@ -49,4 +49,4 @@ class BaseModel:
 		UsersModel().create(......)
 		UsersModel().update(......)
 		"""
-		return self
+		pass

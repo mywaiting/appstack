@@ -32,6 +32,10 @@ import appstack.settings
 import appstack.vendor
 
 from appstack.applications import controllers
+from appstack.libraries import (
+	cache as redis, 
+	database as sqlalchemy
+)
 # from appstack.database import schema, seeds
 
 
@@ -78,11 +82,11 @@ define("database", default=options.database_driver+"://" \
 
 # --- global vars ---
 
-cache = models.Redis(options.cache) \
-		if options.debug else models.Redis(options.cache)
-database = models.SQLAlchemy(options.database) \
+cache = redis.Redis(options.cache).instance() \
+		if options.debug else redis.Redis(options.cache).instance()
+database = sqlalchemy.SQLAlchemy(options.database) \
 		if options.debug else \
-		models.SQLAlchemy(options.database, pool_size=10, pool_recycle=7200)
+		sqlalchemy.SQLAlchemy(options.database, pool_size=10, pool_recycle=7200)
 
 
 # --- application ---
@@ -117,7 +121,7 @@ def main():
 	if options.settings:
 		tornado.options.parse_config_file(options.settings)
 	else:
-		tornado.options.parse_config_file(os.path.join(BASEDIR, 'settings'))
+		tornado.options.parse_config_file(os.path.join(APPSDIR, 'settings', '__init__.py'))
 	# i18n translations
 	# tornado.locale.load_translations(settings.TRANSLATIONDIR) 
 	# tornado.locale.get_supported_locales()
@@ -130,7 +134,7 @@ def main():
 
 	# WARNING: this timestamp must equal to supervisord.readear.conf stopwaitsecs = 10
 	# WARNING: if not or less, the server will be killed by supervisord before max_wait_seconds_before_shutdown
-	if settings.debug:
+	if options.debug:
 		MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 0
 	else:
 		MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 10

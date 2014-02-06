@@ -17,10 +17,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import (
 	ARRAY, BIGINT, BIT, BOOLEAN, BYTEA, CHAR, CIDR, DATE, 
-	DOUBLE_PRECISION, ENUM, FLOAT, HSTORE, INET, INTEGER, 
+	DOUBLE_PRECISION, ENUM, FLOAT, INET, INTEGER, 
 	INTERVAL, MACADDR, NUMERIC, REAL, SMALLINT, TEXT, TIME, 
-	TIMESTAMP, UUID, VARCHAR, INT4RANGE, INT8RANGE, NUMRANGE, 
-	DATERANGE, TSRANGE, TSTZRANGE
+	TIMESTAMP, UUID, VARCHAR
 )
 
 try:
@@ -31,10 +30,11 @@ except ImportError:
 	sys.path.append(BASEDIR) # /appstack
 
 import appstack
-import appstack.application
+import appstack.applications
 import appstack.database
 import appstack.settings
 
+import appstack.applications.application
 
 # db shortcut
 database = appstack.applications.application.database

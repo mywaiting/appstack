@@ -11,7 +11,7 @@ import appstack.applications
 import appstack.database
 
 # from appstack.applications.application import cache, database
-from appstack.database import schema, seeds
+# from appstack.database import schema, seeds
 
 
 """Wrapper with SQLAlchemy for Tornado as Model.
