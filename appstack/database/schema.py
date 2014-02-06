@@ -43,4 +43,4 @@ database = appstack.application.main.database
 SCHEMA_VERSION = '20131117165023' # Year Month Day Hour Minutes Second
 
 DATABASE_ENGINE = 'postgresql'
-DATABASE_DRIVER = 'pycopg2'
+DATABASE_DRIVER = 'psycopg2'

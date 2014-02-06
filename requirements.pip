@@ -1,0 +1,15 @@
+# requirements for appstack
+# use pip to install all package
+
+# please run appstack in virtualenv, do it like that:
+# $ pip install virtualenv
+# $ virtualenv appstack 
+# $ cd appstack
+# $ source bin/active
+# $ pip install -r requirements.pip
+
+tornado
+sqlalchemy
+wtforms
+redis
+psycopg2

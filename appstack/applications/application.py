@@ -21,8 +21,6 @@ from tornado.options import define, options
 try:
 	import appstack
 except ImportError:
-	APPSDIR = os.path.realpath("..") # /appstack/application
-	BASEDIR = os.path.join(APPSDIR, "..") # /appstack
 	sys.path.append(BASEDIR) # /appstack
 
 import appstack
@@ -34,7 +32,6 @@ import appstack.vendor
 
 from appstack.applications import controllers, models
 from appstack.database import schema, seeds
-# from appstack.settings import *
 
 
 # --- const vars ---

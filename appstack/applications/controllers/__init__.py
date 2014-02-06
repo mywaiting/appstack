@@ -77,7 +77,8 @@ class BaseController(tornado.web.RequestHandler):
 		pass
 
 	def get_login_url(self):
-		return super(BaseController, self).get_login_url()
+		# return super(BaseController, self).get_login_url()
+		return self.reverse_url("login")
 
 	def get_current_user(self):
 		session = self.get_secure_cookie("session")
@@ -113,10 +114,13 @@ class BaseController(tornado.web.RequestHandler):
 		kwargs.update(template_vars)
 		return super(BaseController, self).render_string(template_name, **kwargs)
 
+	def get_template_namespace(self):
+		return super(BaseController, self).get_template_namespace()
+
 	# --- default headers ---
 
 	def set_default_headers(self):
-		self.set_header("Server", "PlustackServer/%s" % tornado.version)
+		self.set_header("Server", "AppstackServer/%s" % tornado.version)
 		self.set_header("X-Frame-Options", "deny")
 		self.set_header("X-XSS-Protection", "1;mode=block")
 
