@@ -6,7 +6,6 @@ import os
 import os.path
 import signal
 import sys
-import sys.path
 import time
 
 import tornado
@@ -21,6 +20,8 @@ from tornado.options import define, options
 try:
 	import appstack
 except ImportError:
+	APPSDIR = os.path.realpath("..") # /appstack/application
+	BASEDIR = os.path.join(APPSDIR, "..") # /appstack
 	sys.path.append(BASEDIR) # /appstack
 
 import appstack
@@ -30,8 +31,8 @@ import appstack.libraries
 import appstack.settings
 import appstack.vendor
 
-from appstack.applications import controllers, models
-from appstack.database import schema, seeds
+from appstack.applications import controllers
+# from appstack.database import schema, seeds
 
 
 # --- const vars ---
@@ -64,14 +65,14 @@ define("xsrf_cookies")
 # cache: driver://host:port/cache
 define("cache", default=options.cache_driver+"://" \
 	+options.cache_host+":" \
-	+options.cache_port+"/" \
+	+str(options.cache_port)+"/" \
 	+options.cache_name, type=str, help="cache connections urls")
 # database: dialect+driver://username:password@host:port/database
 define("database", default=options.database_driver+"://" \
 	+options.database_username+":" \
 	+options.database_password+"@" \
 	+options.database_host+":" \
-	+options.database_port+"/" \
+	+str(options.database_port)+"/" \
 	+options.database_name+"?charset=utf-8", type=str, help="database connections urls")
 
 

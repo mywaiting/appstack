@@ -127,18 +127,18 @@ class BaseController(tornado.web.RequestHandler):
 
 class ErrorController(BaseController):
 	def prepare(self, status_code=404, **kwargs):
-        if self.settings.get("debug", False) is not True:
-            pass
-        else:
-            pass
-        self.set_status(status_code)
-        status_code = status_code
-        status_message = httplib.responses[status_code]
-        custom_message = kwargs.get('custom_message', None)
-        return self.render("error.html", 
-        	status_code=status_code, 
-        	status_message=status_message, 
-        	custom_message=custom_message)
+		if self.settings.get("debug", False) is not True:
+			pass
+		else:
+			pass
+		self.set_status(status_code)
+		status_code = status_code
+		status_message = httplib.responses[status_code]
+		custom_message = kwargs.get('custom_message', None)
+		return self.render("error.html", 
+			status_code=status_code, 
+			status_message=status_message, 
+			custom_message=custom_message)
 
 
 class IndexController(BaseController):

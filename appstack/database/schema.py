@@ -7,7 +7,7 @@
 
 import datetime
 import os.path
-import sys.path
+import sys
 
 import sqlalchemy
 
@@ -37,7 +37,7 @@ import appstack.settings
 
 
 # db shortcut
-database = appstack.application.main.database
+database = appstack.applications.application.database
 
 
 SCHEMA_VERSION = '20131117165023' # Year Month Day Hour Minutes Second
