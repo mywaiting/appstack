@@ -1,74 +1,78 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Wrapper with WTForms for Tornado as Form.
+"""
+.. _WTForms: http://wtforms.simplecode.com
+
+# Wrapper with WTForms for Tornado as Form.
+
+Basically we only need to map the request handler's `arguments` to the 
+`wtforms.form.Form` input. Quick example::
+
+	from wtforms import TextField, validators
+	from tornadotools.forms import BaseForm
+
+	class SampleForm(BaseForm):
+		username = TextField('Username', [
+			validators.Length(min=4, message="Too short")
+			])
+
+		email = TextField('Email', [
+			validators.Length(min=4, message="Not a valid mail address"),
+			validators.Email()
+			])
+
+Then, in the `RequestHandler`::
+
+	def get(self):
+		# pass vars: self.request.arguments, self.locale_code
+		form = SampleForm(self)
+		if form.validate():
+			# do something with form.username or form.email
+			pass
+		self.render('template.html', form=form)
 """
 
-import re
-
 import wtforms
-import wtforms.form
-import wtforms.fields
-import wtforms.widgets
-import wtforms.validators
-
-import tornado
-import tornado.escape
-import tornado.locale
 
 
+class Form(wtforms.Form):
 
-class BaseForm(wtforms.Form):
-	def __inti__(self, formdata=None, obje=None, prefix='', locale_code='en_US', **kwargs):
-		self._locale_code = locale_code
-		super(BaseForm, self).__inti__(formdata, obj, prefix, **kwargs)
-
-	def process(self, formdata=None, obj=None, **kwargs):
-		if formdata is not None and not hasattr(formdata, 'getlist'):
-			formdata = TornadoArgumentsWrapper(formdata)
-		super(BaseForm, self).process(formdata, obj, **kwargs)
+	def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+		self._handler = formdata
+		super(Form, self).__init__(TornadoRequestWrapper(self._handler), obj=obj, prefix=prefix, **kwargs)
 
 	def _get_translations(self):
-		if not hasattr(self, '_locale_code'):
-			self._locale_code = 'en_US'
-		return TornadoLocaleWrapper(self._locale_code)
+		# use `Tornado.web.RequestHandler.locale`
+		return TornadoLocaleWrapper(self._handler.locale)
 
 
-class TornadoArgumentsWrapper(dict):
-	def __getattr__(self, name):
-		try:
-			return self[name]
-		except KeyError:
-			raise AttributeError
+class TornadoRequestWrapper(object):
 
-	def __setattr__(self, name, value):
-		self[name] = value
+	def __init__(self, handler):
+		self._handler = handler
 
-	def __delattr__(self, name):
-		try:
-			del self[name]
-		except KeyError:
-			raise AttributeError
+	def __iter__(self):
+		return iter(self._handler.request.arguments)
+
+	def __len__(self):
+		return len(self._handler.request.arguments)
+
+	def __contains__(self, name):
+		return (name in self._handler.request.arguments)
 
 	def getlist(self, name):
-		try:
-			values = []
-			for v in self.get(name, []):
-				v = tornado.escape._unicode(v)
-				if isinstance(v, unicode):
-					v = re.sub(r"[\x00-\x08\x0e-\x1f]", " ", v)
-				values.append(v)
-			return values
-		except KeyError:
-			raise AttributeError
+		# use `Tornado RequestHandler.get_arguments()`
+		return self._handler.get_arguments(name)
 
 
 class TornadoLocaleWrapper(object):
-	def __init__(self, code):
-		self.locale = tornado.locale.get(code)
+
+	def __init__(self, locale):
+		self.locale = locale
 
 	def gettext(self, message):
-		return self.locale.translate(message)
+		return self.locale.translate(message) if self.locale else message
 
 	def ngettext(self, message, plural_message, count):
-		return self.locale.translate(message, plural_message, count)
+		return self.locale.translate(message, plural_message, count) if self.locale else message

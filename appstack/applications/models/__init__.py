@@ -21,7 +21,7 @@ from appstack.database import schema, seeds
 """Model class for all Models to initialize as Backend.
 """
 
-class BaseModelMetaClass(type):
+class ModelMetaClass(type):
 	# 新建类时导入数据库变量
 	def __new__(cls, name, bases, dct):
 		"""To avoid modules that mutually import each other.
@@ -38,15 +38,11 @@ class BaseModelMetaClass(type):
 	 	pass
 
 
-class BaseModel:
+class Model:
 	"""所以的Model都必须继承自BaseModel，以便调用其中的cache和database变量
 	"""
 	# 初始化导入Class的方法集合
 	__metaclass__ = BaseModelMetaClass
 
 	def __init__(self):
-		"""直接返回self方便链式调用。
-		UsersModel().create(......)
-		UsersModel().update(......)
-		"""
 		pass

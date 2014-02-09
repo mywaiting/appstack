@@ -12,7 +12,7 @@ import tornado.locale
 
 
 
-class BaseController(tornado.web.RequestHandler):
+class Controller(tornado.web.RequestHandler):
 
 	# --- application reflect property ---
 
@@ -77,7 +77,7 @@ class BaseController(tornado.web.RequestHandler):
 		pass
 
 	def get_login_url(self):
-		# return super(BaseController, self).get_login_url()
+		# return super(Controller, self).get_login_url()
 		return self.reverse_url("login")
 
 	def get_current_user(self):
@@ -99,7 +99,7 @@ class BaseController(tornado.web.RequestHandler):
 		"""Override `write_error` or `get_error_html` method. Use `send_error`.
 		"""
 		if self.settings.get("debug") and "exe_info" in kwargs:
-			return super(BaseController, self).write_error(status_code, **kwargs)
+			return super(Controller, self).write_error(status_code, **kwargs)
 		else:
 			self.set_status(status_code)
 			return self.render("error.html", 
@@ -110,12 +110,12 @@ class BaseController(tornado.web.RequestHandler):
 	def render_string(self, template_name, **kwargs):
 		"""Hooks inner use `template_vars` for template.
 		"""
-		return super(BaseController, self).render_string(template_name, **kwargs)
+		return super(Controller, self).render_string(template_name, **kwargs)
 
 	def get_template_namespace(self):
 		if not hasattr(self, "template_vars"):
 			self.template_vars = {}
-		ns = super(BaseController, self).get_template_namespace()
+		ns = super(Controller, self).get_template_namespace()
 		ns.update(self.template_vars)
 		return ns
 
@@ -127,7 +127,7 @@ class BaseController(tornado.web.RequestHandler):
 		self.set_header("X-XSS-Protection", "1;mode=block")
 
 
-class ErrorController(BaseController):
+class ErrorController(Controller):
 	def prepare(self, status_code=404, **kwargs):
 		if self.settings.get("debug", False) is not True:
 			pass
@@ -143,6 +143,6 @@ class ErrorController(BaseController):
 			custom_message=custom_message)
 
 
-class IndexController(BaseController):
+class IndexController(Controller):
 	def get(self):
 		return self.render("index.html")
